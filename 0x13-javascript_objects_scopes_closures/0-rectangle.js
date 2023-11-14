@@ -1,8 +1,10 @@
 #!/usr/bin/node
 
-//Script defining an empty Rectangle class
+// Script defining an empty Rectangle class
 
 class Rectangle {
-	// class body...
+	constructor () {
+		// class body..
+	}
 }
 
