@@ -2,25 +2,38 @@
 
 const request = require('request');
 
-request(process.argv[2], function (err, _res, body) {
-  if (err) {
-    console.log(err);
-  } else {
-    const completedTasksByUsers = {};
-    body = JSON.parse(body);
+// Check if the API URL is provided
+if (process.argv.length < 3) {
+    console.error('Usage: node script.js <api-url>');
+    process.exit(1); // Exit with an error code
+}
 
-    for (let i = 0; i < body.length; ++i) {
-      const userId = body[i].userId;
-      const completed = body[i].completed;
+const apiUrl = process.argv[2];
 
-      if (completed && !completedTasksByUsers[userId]) {
-        completedTasksByUsers[userId] = 0;
-      }
+// Make a GET request to the specified API URL
+request.get(apiUrl, { json: true }, (error, response, todos) => {
+    if (error) {
+        console.error('Error:', error);
+    } else if (response.statusCode !== 200) {
+        console.error('Unexpected status code:', response.statusCode);
+    } else {
+        // Filter and count completed tasks for each user
+        const userTasks = {};
+        todos.forEach(todo => {
+            if (todo.completed) {
+                if (userTasks[todo.userId]) {
+                    userTasks[todo.userId]++;
+                } else {
+                    userTasks[todo.userId] = 1;
+                }
+            }
+        });
 
-      if (completed) ++completedTasksByUsers[userId];
+        // Print users with completed tasks
+        console.log('Users with completed tasks:');
+        Object.entries(userTasks).forEach(([userId, completedTasks]) => {
+            console.log(`User ${userId}: ${completedTasks} completed tasks`);
+        });
     }
-
-    console.log(completedTasksByUsers);
-  }
 });
 
